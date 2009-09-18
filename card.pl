@@ -30,18 +30,17 @@ sub main {
 
 	my $back = Clutter::Texture->new('icon.png');
 	$back->set_name('back');
+	$back->set_reactive(TRUE);
 
 	my $front = Clutter::Texture->new('daxim.jpg');
 	$front->set_name('front');
+	$front->set_reactive(TRUE);
 
 	
 	my $card = Clutter::Group->new();
-	$card->add($back, $front);
-	$back->raise_top();
-#	$front->raise($back);
-#	$front->raise_top();
-#	$back->lower_bottom();
+	$card->add($front, $back);
 #	$front->set_position(0, $back->get_height + 10);
+#	$front->set_position(0, $back->get_height/2);
 
 	$card->set_position(($stage->get_width - $front->get_width) / 2, 40);
 	
@@ -49,17 +48,18 @@ sub main {
 	my $behaviour;
 	$card->signal_connect('button-release-event', sub {
 		print "Card\n";
-		$behaviour = rotate($card, 0, 90, sub {
+		$behaviour = rotate($card, 'cw', 0, 90, sub {
 			$front->raise_top();
-			$behaviour = rotate($front, 0, 90);
+			$behaviour = rotate($card, 'cw', 90, 180);
 		});
 	});
 
-	my $behaviour2;
-	$stage->set_reactive(TRUE);
 	$stage->signal_connect('button-release-event', sub {
-		print "Stage\n";
-		$behaviour2 = rotate($card, 0, 180);
+		print "Card back\n";
+		$behaviour = rotate($card, 'ccw', 180, 90, sub {
+			$front->lower_bottom();
+			$behaviour = rotate($card, 'ccw', 90, 0);
+		});
 	});
 
 	$stage->add($card);
@@ -70,10 +70,10 @@ sub main {
 
 
 sub rotate {
-	my ($actor, $start, $end, $action) = @_;
+	my ($actor, $direction, $start, $end, $action) = @_;
 	my $timeline = Clutter::Timeline->new(300);
 	my $alpha = Clutter::Alpha->new($timeline, 'linear');
-	my $behaviour = Clutter::Behaviour::Rotate->new($alpha, 'y-axis', 'cw', $start, $end);
+	my $behaviour = Clutter::Behaviour::Rotate->new($alpha, 'y-axis', $direction, $start, $end);
 	$behaviour->set_center($actor->get_width() / 2, 0, 0);
 	$behaviour->apply($actor);
 	$timeline->start();
