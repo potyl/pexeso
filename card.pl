@@ -10,7 +10,7 @@ card.pl
 
 =head1 DESCRIPTION
 
-This sample script tries to ake a two face card.
+This sample script tries to take a two face card.
 
 =cut
 
@@ -18,66 +18,53 @@ use strict;
 use warnings;
 
 use Glib qw(TRUE FALSE);
+use Card;
 use Clutter qw(-threads-init -init);
+
+my @FILES = qw(daxim.jpg icon.png);
 
 exit main();
 
 
 sub main {
 
+	Clutter::Cogl->set_backface_culling_enabled(FALSE);
+
 	my $stage = Clutter::Stage->get_default();
 	$stage->set_size(300, 300);
 
-	my $back = Clutter::Texture->new('icon.png');
-	$back->set_name('back');
-	$back->set_reactive(TRUE);
 
-	my $front = Clutter::Texture->new('daxim.jpg');
-	$front->set_name('front');
-	$front->set_reactive(TRUE);
+	my $card1 = new_card($stage, @FILES);
+	$card1->set_position(($stage->get_width - $card1->{front}->get_width) / 2, 40);
 
+	my $card2 = new_card($stage, @FILES);
 
-	my $card = Clutter::Group->new();
-	$card->add($front, $back);
-#	$front->set_position(0, $back->get_height + 10);
-#	$front->set_position(0, $back->get_height/2);
-
-	$card->set_position(($stage->get_width - $front->get_width) / 2, 40);
-
-	$card->set_reactive(TRUE);
-	my $behaviour;
-	$card->signal_connect('button-release-event', sub {
-		print "Card\n";
-		$behaviour = rotate($card, 'cw', 0, 90, sub {
-			$front->raise_top();
-			$behaviour = rotate($card, 'cw', 90, 180);
-		});
-	});
-
+	my $do_face = 1;
 	$stage->signal_connect('button-release-event', sub {
-		print "Card back\n";
-		$behaviour = rotate($card, 'ccw', 180, 90, sub {
-			$front->lower_bottom();
-			$behaviour = rotate($card, 'ccw', 90, 0);
-		});
+
+		my $method = $do_face ? 'show_face' : 'show_back';
+
+		foreach my $card ($card1, $card2) {
+			$card->$method();
+		}
+
+		$do_face = !$do_face;
 	});
 
-	$stage->add($card);
 	$stage->show_all();
 	Clutter->main();
 	return 0;
 }
 
 
-sub rotate {
-	my ($actor, $direction, $start, $end, $action) = @_;
-	my $timeline = Clutter::Timeline->new(300);
-	my $alpha = Clutter::Alpha->new($timeline, 'linear');
-	my $behaviour = Clutter::Behaviour::Rotate->new($alpha, 'y-axis', $direction, $start, $end);
-	$behaviour->set_center($actor->get_width() / 2, 0, 0);
-	$behaviour->apply($actor);
-	$timeline->start();
-	$timeline->signal_connect(completed => $action) if $action;
+sub new_card {
+	my ($stage, $front, $back) = @_;
 
-	return $behaviour;
+	my $card = Card->new({
+		front => Clutter::Texture->new($front),
+		back  => Clutter::Texture->new($back),
+	});
+	$stage->add($card);
+
+	return $card;
 }
