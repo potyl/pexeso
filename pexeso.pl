@@ -308,11 +308,28 @@ printf "Current: %s\n", $card->get_name;
 		$pexeso->card_2($card);
 		$card->flip();
 
+		# Check if the cards are the same
 		if ($pexeso->card_1->get_name eq $card->get_name) {
-			print "Matching cards!\n";
+			$pexeso->matching_cards();
 		}
 	}
 printf "\n";
+}
+
+
+sub matching_cards {
+	my $pexeso = shift;
+	print "Matching cards!\n";
+
+	# Disable the click
+	Glib::Timeout->add(500, sub {
+		# Hide the cards
+		$pexeso->card_1->hide();
+		$pexeso->card_1(undef);
+		$pexeso->card_2->hide();
+		$pexeso->card_2(undef);
+		return FALSE;
+	});
 }
 
 
