@@ -21,23 +21,25 @@ use Glib qw(TRUE FALSE);
 use Card;
 use Clutter qw(-threads-init -init);
 
-my @FILES = qw(daxim.jpg icon.png);
 
 exit main();
 
 
 sub main {
 
-	Clutter::Cogl->set_backface_culling_enabled(FALSE);
+	my @files = qw(icon.png daxim.jpg);
+
+	# Enable backface culling in order to animate the cards properly
+	Clutter::Cogl->set_backface_culling_enabled(TRUE);
 
 	my $stage = Clutter::Stage->get_default();
 	$stage->set_size(300, 300);
 
 
-	my $card1 = new_card($stage, @FILES);
+	my $card1 = new_card($stage, @files);
 	$card1->set_position(($stage->get_width - $card1->{front}->get_width) / 2, 40);
 
-	my $card2 = new_card($stage, @FILES);
+	my $card2 = new_card($stage, @files);
 
 	my $do_face = 1;
 	$stage->signal_connect('button-release-event', sub {
