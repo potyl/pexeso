@@ -58,6 +58,7 @@ sub new {
 	# A pexeso card starts with showing its back
 	$self->set_rotation('y-axis', 180, $self->get_width/2, 0, 0);
 
+#	$self->set_anchor_point_from_gravity('center');
 	return $self;
 }
 
@@ -88,12 +89,16 @@ sub flip {
 
 	my $timeline = Clutter::Timeline->new(300);
 	my $alpha = Clutter::Alpha->new($timeline, 'linear');
-	my $behaviour = Clutter::Behaviour::Rotate->new($alpha, 'y-axis', $direction, $angle_start, $angle_end);
-	$behaviour->set_center($self->get_width() / 2, 0, 0);
-	$behaviour->apply($self);
+	my $rotation = Clutter::Behaviour::Rotate->new($alpha, 'y-axis', $direction, $angle_start, $angle_end);
+	$rotation->set_center($self->get_width() / 2, 0, 0);
+	$rotation->apply($self);
 	$timeline->start();
+	$timeline->signal_connect(completed => sub {
+		delete $self->{rotation};
+	});
 
-	$self->{behaviour} = $behaviour;
+	# Keep a handle to the behaviour otherwise it wont be applied
+	$self->{rotation} = $rotation;
 }
 
 
@@ -103,15 +108,36 @@ sub fade {
 	my $timeline = Clutter::Timeline->new(300);
 	my $alpha = Clutter::Alpha->new($timeline, 'linear');
 	my ($start, $end) = (1.0, 0.0);
-	my $behaviour = Clutter::Behaviour::Scale->new($alpha, $start, $start, $end, $end);
-	$behaviour->apply($self->{front});
-	$behaviour->apply($self->{back});
+
+	# Shrink the card
+	my $zoom = Clutter::Behaviour::Scale->new($alpha, $start, $start, $end, $end);
+#	$zoom->apply($self);
+	$zoom->apply($self->{front});
+	$zoom->apply($self->{back});
+
+	# And spin it
+	my $rotation = Clutter::Behaviour::Rotate->new($alpha, 'z-axis', 'cw', 0, 360);
+	$rotation->set_center($self->get_width() / 2, $self->get_height() / 2, 0);
+	$rotation->apply($self);
+
+	# And make it transparent
+	my $transparent = Clutter::Behaviour::Opacity->new($alpha, 255, 0);
+	$transparent->apply($self);
+
+
+	# Start the timeline and once it is over hide the card
 	$timeline->start();
 	$timeline->signal_connect(completed => sub {
 		$self->hide();
+		delete $self->{zoom};
+		delete $self->{rotation};
+		delete $self->{transparent};
 	});
 
-	$self->{behaviour} = $behaviour;
+	# Keep a handle to the behaviours otherwise they wont be applied
+	$self->{zoom} = $zoom;
+	$self->{rotation} = $rotation;
+	$self->{transparent} = $transparent;
 }
 
 
