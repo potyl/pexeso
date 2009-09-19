@@ -41,7 +41,7 @@ sub new {
 	$self->{front} = $front;
 	$self->{back} = $back;
 
-	# Flip the back card, this assumes that backface culling is enabled
+	# Flip the back card as it has to be facing the opposite direction
 	$back->set_rotation('y-axis', 180, $back->get_width/2, 0, 0);
 
 	$self->add($front, $back);
@@ -77,6 +77,24 @@ sub _flip {
 
 	$self->{behaviour} = $behaviour;
 }
+
+
+# Turns backface culling (hide the back side of an actor) on and calls the super
+# paint to draw the cards.
+sub PAINT {
+	my $self = shift;
+
+	# Enable backface culling in order to animate the cards properly
+	my $culling = Clutter::Cogl->get_backface_culling_enabled();
+	Clutter::Cogl->set_backface_culling_enabled(TRUE);
+
+	# Draw the card properly
+	$self->SUPER::PAINT(@_);
+
+	# Restore backface culling to its previous state
+	Clutter::Cogl->set_backface_culling_enabled($culling);
+}
+
 
 # Return a true value
 1;
