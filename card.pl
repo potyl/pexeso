@@ -27,7 +27,7 @@ exit main();
 
 sub main {
 
-	my @files = qw(icon.png daxim.jpg);
+	my @files = qw(daxim.jpg icon.png);
 
 
 	my $stage = Clutter::Stage->get_default();
@@ -39,16 +39,10 @@ sub main {
 
 	my $card2 = new_card($stage, @files);
 
-	my $do_face = 1;
 	$stage->signal_connect('button-release-event', sub {
-
-		my $method = $do_face ? 'show_face' : 'show_back';
-
 		foreach my $card ($card1, $card2) {
-			$card->$method();
+			$card->flip();
 		}
-
-		$do_face = !$do_face;
 	});
 
 	$stage->show_all();
