@@ -84,7 +84,23 @@ sub _animation_flip {
 	my $self = shift;
 	my ($direction) = @_;
 
-	my @angles = $direction eq 'cw' ? (0, 180) : (180, 0);
+	# Normally a flip would go from (0 -> 180) or (180 -> 0). But since the flip
+	# is done in an animation flipping before a current animation is over will
+	# flicker the image to the original state. What this code here is doing is
+	# preserving the current angle and to resume start the flip animation from
+	# there.
+	#
+	# If the image is already rotated (in between a flip) then keep the
+	# current angle and resume the new rotation from that point
+	my @angles;
+	if ($direction eq 'cw') {
+		my ($angle) = $self->get_rotation('y-axis');
+		@angles = ($angle, 180);
+	}
+	else {
+		my ($angle) = ($self->get_rotation('y-axis'));
+		@angles = ($angle, 0);
+	}
 
 	my $timeline = Clutter::Timeline->new(1000);
 	my $alpha = Clutter::Alpha->new($timeline, 'linear');
