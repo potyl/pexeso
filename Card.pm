@@ -68,40 +68,30 @@ sub new {
 
 sub show_face {
 	my $self = shift;
-	my $behaviour;
-
-	$self->{behaviour} = rotate($self, 'cw', 0, 180);
-
-	$self->{behaviour} = rotate($self, 'cw', 0, 90, sub {
-		$self->{front}->raise_top();
-		$self->{behaviour} = rotate($self, 'cw', 90, 180);
-	}) if 0;
+	$self->_flip('cw');
 }
 
 
 sub show_back {
 	my $self = shift;
-
-	$self->{behaviour} = rotate($self, 'ccw', 180, 0);
-
-	$self->{behaviour} = rotate($self, 'ccw', 180, 90, sub {
-		$self->{front}->lower_bottom();
-		$self->{behaviour} = rotate($self, 'ccw', 90, 0);
-	}) if 0;
+	$self->_flip('ccw');
 }
 
 
-sub rotate {
-	my ($actor, $direction, $start, $end, $action) = @_;
+sub _flip {
+	my $self = shift;
+	my ($direction) = @_;
+
+	my @angles = $direction eq 'cw' ? (0, 180) : (180, 0);
+
 	my $timeline = Clutter::Timeline->new(1000);
 	my $alpha = Clutter::Alpha->new($timeline, 'linear');
-	my $behaviour = Clutter::Behaviour::Rotate->new($alpha, 'y-axis', $direction, $start, $end);
-	$behaviour->set_center($actor->get_width() / 2, 0, 0);
-	$behaviour->apply($actor);
+	my $behaviour = Clutter::Behaviour::Rotate->new($alpha, 'y-axis', $direction, @angles);
+	$behaviour->set_center($self->get_width() / 2, 0, 0);
+	$behaviour->apply($self);
 	$timeline->start();
-	$timeline->signal_connect(completed => $action) if $action;
 
-	return $behaviour;
+	$self->{behaviour} = $behaviour;
 }
 
 # Return a true value
