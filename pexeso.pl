@@ -271,15 +271,11 @@ sub turn_card {
 		return;
 	}
 
-printf "Card1:   %s\n", $pexeso->card_1 ? $pexeso->card_1->get_name : 'NONE';
-printf "Card2:   %s\n", $pexeso->card_2 ? $pexeso->card_2->get_name : 'NONE';
-printf "Current: %s\n", $card->get_name;
 	# Check if two cards are already flipped
 	if ($pexeso->card_1 && $pexeso->card_2) {
 		# Can't flip more cards, reset the other cards but make sure that the
 		# selected card stays flipped! The user could have selected an already
 		# flipped card.
-		print "Can't flip more than two cards, reset\n";
 		my $flip = TRUE;
 		# Flip the previous cards and show the new card
 		if ($pexeso->card_1 != $card) {
@@ -301,19 +297,17 @@ printf "Current: %s\n", $card->get_name;
 		$card->flip() if $flip;
 	}
 	elsif (! $pexeso->card_1) {
-		print "Set card1\n";
 		$pexeso->card_1($card);
 		$card->flip();
 	}
 
-	# Flippinf the first card again?
+	# Flipping the first card again?
 	elsif ($pexeso->card_1 == $card) {
-		print "Can't flip card_1\n";
+		# Can't unflip a card, that's cheating!
 	}
 
 	# Flipping the second card
 	elsif (! $pexeso->card_2) {
-		print "Set card2\n";
 		$pexeso->card_2($card);
 		$card->flip();
 
@@ -322,7 +316,6 @@ printf "Current: %s\n", $card->get_name;
 			$pexeso->matching_pair();
 		}
 	}
-printf "\n";
 }
 
 
