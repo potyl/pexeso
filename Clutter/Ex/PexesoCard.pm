@@ -97,7 +97,7 @@ sub flip {
 }
 
 
-sub remove {
+sub fade {
 	my $self = shift;
 
 	my $timeline = Clutter::Timeline->new(300);
