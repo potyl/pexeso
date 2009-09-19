@@ -2,22 +2,24 @@
 
 =head1 NAME
 
-Card - A card is an actor with two faces.
+Clutter::Ex::PexesoCard - A card is an actor with two faces.
 
 =head1 SYNOPSIS
 
-	my $card = Card->new({
+	my $card = Clutter::Ex::PexesoCard->new({
 		front => $front_actor,
 		back  => $back_actor,
 	});
 
 =head1 DESCRIPTION
 
-This sample script tries to ake a two face card.
+Representation of a card. A card consists for two actors: back face and front
+face that act together as a single entity. A card can be flipped to show the
+front face or the back face.
 
 =cut
 
-package Card;
+package Clutter::Ex::PexesoCard;
 
 use strict;
 use warnings;
