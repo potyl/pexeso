@@ -145,10 +145,8 @@ sub parse_icon_list {
 	$max = int($max/2);
 
 	# Pick the icons to download
-	my @picked;
-	for (1 .. $max) {
-		push @picked, $icons[rand @icons];
-	}
+	my @picked = shuffle @icons;
+	@picked = @picked[0 .. $max - 1];
 	$pexeso->urls(\@picked);
 
 	# Start to download the icons
