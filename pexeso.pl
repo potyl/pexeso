@@ -81,7 +81,11 @@ sub construct_game {
 	);
 	$stage->show_all();
 
-	# The back of each card
+
+	# The back of each card. This particular actor is not going to be displayed.
+	# Instead clones of this actor will be used. Since Clutter 1.0 an actor can
+	# only be cloned if it is added to the stage. Since this actor is not shown
+	# it is hidden in the stage.
 	my $backface = Clutter::Texture->new('icon.png');
 	$backface->hide();
 	$stage->add($backface);
