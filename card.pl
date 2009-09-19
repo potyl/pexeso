@@ -24,7 +24,7 @@ exit main();
 
 
 sub main {
-	
+
 	my $stage = Clutter::Stage->get_default();
 	$stage->set_size(300, 300);
 
@@ -36,14 +36,14 @@ sub main {
 	$front->set_name('front');
 	$front->set_reactive(TRUE);
 
-	
+
 	my $card = Clutter::Group->new();
 	$card->add($front, $back);
 #	$front->set_position(0, $back->get_height + 10);
 #	$front->set_position(0, $back->get_height/2);
 
 	$card->set_position(($stage->get_width - $front->get_width) / 2, 40);
-	
+
 	$card->set_reactive(TRUE);
 	my $behaviour;
 	$card->signal_connect('button-release-event', sub {
@@ -78,6 +78,6 @@ sub rotate {
 	$behaviour->apply($actor);
 	$timeline->start();
 	$timeline->signal_connect(completed => $action) if $action;
-	
+
 	return $behaviour;
 }
