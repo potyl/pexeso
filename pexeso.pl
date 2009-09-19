@@ -41,6 +41,7 @@ __PACKAGE__->mk_accessors qw(
 	parallel
 	card_1
 	card_2
+	disable_selection
 );
 
 
@@ -262,6 +263,10 @@ sub turn_card {
 	my $pexeso = shift;
 	my ($card) = @_;
 
+	if ($pexeso->disable_selection) {
+		return;
+	}
+
 printf "Card1:   %s\n", $pexeso->card_1 ? $pexeso->card_1->get_name : 'NONE';
 printf "Card2:   %s\n", $pexeso->card_2 ? $pexeso->card_2->get_name : 'NONE';
 printf "Current: %s\n", $card->get_name;
@@ -310,24 +315,27 @@ printf "Current: %s\n", $card->get_name;
 
 		# Check if the cards are the same
 		if ($pexeso->card_1->get_name eq $card->get_name) {
-			$pexeso->matching_cards();
+			$pexeso->matching_pair();
 		}
 	}
 printf "\n";
 }
 
 
-sub matching_cards {
+sub matching_pair {
 	my $pexeso = shift;
 	print "Matching cards!\n";
 
-	# Disable the click
+	# Don't let the user pick new cards until we remove the matching pair
+	$pexeso->disable_selection(1);
+
 	Glib::Timeout->add(500, sub {
 		# Hide the cards
 		$pexeso->card_1->hide();
 		$pexeso->card_1(undef);
 		$pexeso->card_2->hide();
 		$pexeso->card_2(undef);
+		$pexeso->disable_selection(0);
 		return FALSE;
 	});
 }
