@@ -26,23 +26,7 @@ use Glib qw(TRUE FALSE);
 use Clutter;
 use Carp;
 
-use Glib::Object::Subclass 'Clutter::Group',
-	properties => [
-		Glib::ParamSpec->object(
-			'front',
-			'Front face actor',
-			'The actor that will be shown in the front face',
-			'Clutter::Actor',
-			[ qw(readable writable) ],
-		),
-		Glib::ParamSpec->object(
-			'back',
-			'Back face actor',
-			'The actor that will be shown in the back face',
-			'Clutter::Actor',
-			[ qw(readable writable) ],
-		),
-	];
+use Glib::Object::Subclass 'Clutter::Group';
 
 
 sub new {
@@ -51,16 +35,14 @@ sub new {
 	croak "Usage: ", __PACKAGE__, "->new(hashref)" unless ref $args eq 'HASH';
 
 	my ($front, $back) = @$args{qw(front back)};
-	my $self = Glib::Object::new($class =>
-		front => $front,
-		back  => $back,
-	);
+	my $self = Glib::Object::new($class);
+	$self->{front} = $front;
+	$self->{back} = $back;
 
-	# Flip the back card
+	# Flip the back card, this assumes that backface culling is enabled
 	$back->set_rotation('y-axis', 180, $back->get_width/2, 0, 0);
 
 	$self->add($front, $back);
-	#$front->set_position(0, $back->get_height/2);
 
 	return $self;
 }
