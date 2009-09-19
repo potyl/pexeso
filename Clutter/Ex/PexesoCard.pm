@@ -40,11 +40,15 @@ sub new {
 	my $self = Glib::Object::new($class);
 	$self->{front} = $front;
 	$self->{back} = $back;
+	$self->{is_showing_face} = TRUE;
 
 	# Flip the back card as it has to be facing the opposite direction
 	$back->set_rotation('y-axis', 180, $back->get_width/2, 0, 0);
 
 	$self->add($front, $back);
+
+	# A pexeso card starts with showing its back
+	$self->set_rotation('y-axis', 180, $self->get_width/2, 0, 0);;
 
 	return $self;
 }
@@ -52,17 +56,31 @@ sub new {
 
 sub show_face {
 	my $self = shift;
-	$self->_flip('cw');
+	$self->_animation_flip('cw');
+	$self->{is_showing_face} = TRUE;
 }
 
 
 sub show_back {
 	my $self = shift;
-	$self->_flip('ccw');
+	$self->_animation_flip('ccw');
+	$self->{is_showing_face} = FALSE;
 }
 
 
-sub _flip {
+sub flip {
+	my $self = shift;
+
+	if ($self->{is_showing_face}) {
+		$self->show_back();
+	}
+	else {
+		$self->show_face();
+	}
+}
+
+
+sub _animation_flip {
 	my $self = shift;
 	my ($direction) = @_;
 
