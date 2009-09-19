@@ -321,16 +321,15 @@ sub turn_card {
 
 sub matching_pair {
 	my $pexeso = shift;
-	print "Matching cards!\n";
 
 	# Don't let the user pick new cards until we remove the matching pair
 	$pexeso->disable_selection(1);
 
 	Glib::Timeout->add(500, sub {
 		# Hide the cards
-		$pexeso->card_1->hide();
+		$pexeso->card_1->fade();
 		$pexeso->card_1(undef);
-		$pexeso->card_2->hide();
+		$pexeso->card_2->fade();
 		$pexeso->card_2(undef);
 		$pexeso->disable_selection(0);
 		return FALSE;
