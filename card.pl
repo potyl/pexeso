@@ -18,7 +18,7 @@ use strict;
 use warnings;
 
 use Glib qw(TRUE FALSE);
-use Card;
+use Clutter::Ex::PexesoCard;
 use Clutter qw(-threads-init -init);
 
 
@@ -29,8 +29,6 @@ sub main {
 
 	my @files = qw(icon.png daxim.jpg);
 
-	# Enable backface culling in order to animate the cards properly
-	Clutter::Cogl->set_backface_culling_enabled(TRUE);
 
 	my $stage = Clutter::Stage->get_default();
 	$stage->set_size(300, 300);
@@ -62,7 +60,7 @@ sub main {
 sub new_card {
 	my ($stage, $front, $back) = @_;
 
-	my $card = Card->new({
+	my $card = Clutter::Ex::PexesoCard->new({
 		front => Clutter::Texture->new($front),
 		back  => Clutter::Texture->new($back),
 	});
