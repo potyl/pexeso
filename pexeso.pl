@@ -21,6 +21,7 @@ use warnings;
 
 use Glib qw(TRUE FALSE);
 use Gtk2;
+use Clutter::Ex::PexesoCard;
 use Clutter qw(-threads-init -init);
 use Data::Dumper;
 use AnyEvent::HTTP;
@@ -30,7 +31,15 @@ use Carp 'carp';
 use List::Util 'shuffle';
 use base 'Class::Accessor::Fast';
 
-__PACKAGE__->mk_accessors qw(columns rows stage urls actors x y parallel animation_1);
+__PACKAGE__->mk_accessors qw(
+	columns
+	rows
+	stage
+	backface
+	urls
+	actors
+	parallel
+);
 
 
 my $ICON_WIDTH = 80;
@@ -44,14 +53,14 @@ sub main {
 	my ($columns, $rows) = @ARGV;
 	$columns ||= 8;
 	$rows ||= 4;
-	
+
 	my $pexeso = __PACKAGE__->new({
 		columns  => $columns,
 		rows     => $rows,
 		actors   => [],
 		parallel => 5,
 	});
-	
+
 	$pexeso->construct_game();
 
 	return 0;
@@ -60,7 +69,7 @@ sub main {
 
 sub construct_game {
 	my $pexeso = shift;
-	
+
 	# The main clutter stage
 	my $stage = Clutter::Stage->get_default();
 	$pexeso->stage($stage);
@@ -68,9 +77,15 @@ sub construct_game {
 		$pexeso->columns * $ICON_WIDTH,
 		$pexeso->rows * $ICON_HEIGHT,
 	);
-
 	$stage->show_all();
-	
+
+	# The back of each card
+	my $backface = Clutter::Texture->new('icon.png');
+	$backface->hide();
+	$stage->add($backface);
+	$pexeso->backface($backface);
+
+
 	$pexeso->download_icon_list();
 	Clutter->main();
 }
@@ -78,9 +93,9 @@ sub construct_game {
 
 sub download_icon_list {
 	my $pexeso = shift;
-	
+
 	my $uri = URI->new('http://hexten.net/cpan-faces/');
-	
+
 	# Asyncrhonous download the list of icons available
 	http_request(
 		GET     => $uri,
@@ -93,13 +108,13 @@ sub download_icon_list {
 sub parse_icon_list {
 	my $pexeso = shift;
 	my ($base_uri, $content, $headers) = @_;
-	
+
 	if ($headers->{Status} != 200) {
 		$pexeso->quit("Failed to download $base_uri: $headers->{Reason} (Status: $headers->{Status})");
 		return;
 	}
-	
-	
+
+
 	# Find all icon candidates
 	my $parser = XML::LibXML->new();
 	my $doc = $parser->parse_html_string($content);
@@ -109,7 +124,7 @@ sub parse_icon_list {
 		my $uri = URI->new_abs($src, $base_uri);
 		push @icons, $uri;
 	}
-	
+
 	# Find how many icons should be downloaded
 	my $max = $pexeso->columns * $pexeso->rows;
 	if ($max > @icons) {
@@ -117,14 +132,14 @@ sub parse_icon_list {
 		$max = $pexeso->columns * $pexeso->rows;
 	}
 	$max = int($max/2);
-	
+
 	# Pick the icons to download
 	my @picked;
 	for (1 .. $max) {
 		push @picked, $icons[rand @icons];
 	}
 	$pexeso->urls(\@picked);
-	
+
 	# Start to download the icons
 	for (1 .. $pexeso->parallel) {
 		$pexeso->download_next_icon();
@@ -144,10 +159,10 @@ sub download_next_icon {
 		);
 		return;
 	}
-	
+
 	# No more icons to download
 	$pexeso->parallel($pexeso->parallel - 1);
-	
+
 	# Build the board if this is the last parallel worker
 	if (! $pexeso->parallel) {
 		$pexeso->build_board();
@@ -186,7 +201,7 @@ sub parse_icon {
 		($pixbuf->get_has_alpha ? 4 : 3),
 		[]
 	);
-	
+
 	my $count = push @{ $pexeso->actors }, $texture;
 	$pexeso->download_next_icon();
 }
@@ -196,7 +211,7 @@ sub build_board {
 	my $pexeso = shift;
 
 	my @actors = @{ delete $pexeso->{actors} };
-	
+
 	my $stage = $pexeso->stage;
 
 	# Collect the cards to show. For each original card generate a matching
@@ -207,25 +222,24 @@ sub build_board {
 
 		# Cards will match if they have the same name
 		my $i = @cards;
-		foreach my $card ($actor, $clone) {
+		foreach my $frontface ($actor, $clone) {
+
+			my $card = Clutter::Ex::PexesoCard->new({
+				front => $frontface,
+				back  => Clutter::Clone->new($pexeso->backface),
+			});
+
 			$stage->add($card);
 			$card->set_name("$i");
 			$card->set_reactive(TRUE);
 			$card->signal_connect('button-release-event', sub {
 				print "Card ", $card->get_name, "\n";
-				
-				my $timeline = Clutter::Timeline->new(250);
-				my $alpha = Clutter::Alpha->new($timeline, 'linear');
-				my $behaviour = Clutter::Behaviour::Rotate->new($alpha, 'y-axis', 'cw', 0, 180);
-				$behaviour->set_center($card->get_width() / 2, 0, 0);
-				$behaviour->apply($card);
-				$timeline->start();
-				$pexeso->animation_1($behaviour);
+				$card->flip();
 			});
 			push @cards, $card;
 		}
 	}
-	
+
 	# Shuffle and place the cards in the board
 	@cards = shuffle @cards;
 
