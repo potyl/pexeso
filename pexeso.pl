@@ -19,6 +19,9 @@ This sample script allows you to play the pexeso game.
 use strict;
 use warnings;
 
+use FindBin;
+use lib "$FindBin::Bin";
+
 use Glib qw(TRUE FALSE);
 use Gtk2;
 use Clutter::Ex::PexesoCard;
@@ -29,6 +32,7 @@ use XML::LibXML;
 use URI;
 use Carp 'carp';
 use List::Util 'shuffle';
+use File::Spec;
 use base 'Class::Accessor::Fast';
 
 __PACKAGE__->mk_accessors qw(
@@ -87,7 +91,7 @@ sub construct_game {
 	# Instead clones of this actor will be used. Since Clutter 1.0 an actor can
 	# only be cloned if it is added to the stage. Since this actor is not shown
 	# it is hidden in the stage.
-	my $backface = Clutter::Texture->new('icon.png');
+	my $backface = Clutter::Texture->new(File::Spec->catfile($FindBin::Bin, 'icon.png'));
 	$backface->hide();
 	$stage->add($backface);
 	$pexeso->backface($backface);
