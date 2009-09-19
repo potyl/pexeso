@@ -235,55 +235,7 @@ sub build_board {
 			$card->set_name("$i");
 			$card->set_reactive(TRUE);
 			$card->signal_connect('button-release-event', sub {
-
-printf "Card1:   %s\n", $pexeso->card_1 ? $pexeso->card_1->get_name : 'NONE';
-printf "Card2:   %s\n", $pexeso->card_2 ? $pexeso->card_2->get_name : 'NONE';
-printf "Current: %s\n", $card->get_name;
-
-				if ($pexeso->card_1 && $pexeso->card_2) {
-					# Can't flip more cards, reset the other cards
-					print "Can't flip more than two cards, reset\n";
-					my $flip = TRUE;
-					# Flip the previous cards and show the new card
-					if ($pexeso->card_1 != $card) {
-						$pexeso->card_1->flip();
-					}
-					else {
-						$flip = FALSE;
-					}
-					$pexeso->card_1($card);
-
-					if ($pexeso->card_2 != $card) {
-						$pexeso->card_2->flip();
-					}
-					else {
-						$flip = FALSE;
-					}
-					$pexeso->card_2(undef);
-
-					$card->flip() if $flip;
-				}
-				elsif (! $pexeso->card_1) {
-					print "Set card1\n";
-					$pexeso->card_1($card);
-					$card->flip();
-				}
-				elsif ($pexeso->card_1 == $card) {
-					print "Can't flip card_1\n";
-				}
-
-				# Flipping the second card
-				elsif (! $pexeso->card_2) {
-					print "Set card2\n";
-					$pexeso->card_2($card);
-					$card->flip();
-
-					if ($pexeso->card_1->get_name eq $card->get_name) {
-						print "Matching cards!\n";
-					}
-				}
-
-printf "\n";
+				$pexeso->turn_card(@_);
 			});
 
 			push @cards, $card;
@@ -292,8 +244,6 @@ printf "\n";
 
 	# Shuffle and place the cards in the board
 	@cards = shuffle @cards;
-
-	my ($x, $y) = (0, 0);
 	for (my $row = 0; $row < $pexeso->rows; ++$row) {
 		for (my $column = 0; $column < $pexeso->columns; ++$column) {
 			my $card = pop @cards;
@@ -301,6 +251,64 @@ printf "\n";
 			$card->show();
 		}
 	}
+}
+
+
+sub turn_card {
+	my $pexeso = shift;
+	my ($card) = @_;
+
+printf "Card1:   %s\n", $pexeso->card_1 ? $pexeso->card_1->get_name : 'NONE';
+printf "Card2:   %s\n", $pexeso->card_2 ? $pexeso->card_2->get_name : 'NONE';
+printf "Current: %s\n", $card->get_name;
+	# Check if two cards are already flipped
+	if ($pexeso->card_1 && $pexeso->card_2) {
+		# Can't flip more cards, reset the other cards but make sure that the
+		# selected card stays flipped! The user could have selected an already
+		# flipped card.
+		print "Can't flip more than two cards, reset\n";
+		my $flip = TRUE;
+		# Flip the previous cards and show the new card
+		if ($pexeso->card_1 != $card) {
+			$pexeso->card_1->flip();
+		}
+		else {
+			$flip = FALSE;
+		}
+		$pexeso->card_1($card);
+
+		if ($pexeso->card_2 != $card) {
+			$pexeso->card_2->flip();
+		}
+		else {
+			$flip = FALSE;
+		}
+		$pexeso->card_2(undef);
+
+		$card->flip() if $flip;
+	}
+	elsif (! $pexeso->card_1) {
+		print "Set card1\n";
+		$pexeso->card_1($card);
+		$card->flip();
+	}
+
+	# Flippinf the first card again?
+	elsif ($pexeso->card_1 == $card) {
+		print "Can't flip card_1\n";
+	}
+
+	# Flipping the second card
+	elsif (! $pexeso->card_2) {
+		print "Set card2\n";
+		$pexeso->card_2($card);
+		$card->flip();
+
+		if ($pexeso->card_1->get_name eq $card->get_name) {
+			print "Matching cards!\n";
+		}
+	}
+printf "\n";
 }
 
 
