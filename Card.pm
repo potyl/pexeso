@@ -51,8 +51,7 @@ sub new {
 	croak "Usage: ", __PACKAGE__, "->new(hashref)" unless ref $args eq 'HASH';
 
 	my ($front, $back) = @$args{qw(front back)};
-	my $self = Glib::Object::new(
-		__PACKAGE__,
+	my $self = Glib::Object::new($class =>
 		front => $front,
 		back  => $back,
 	);
