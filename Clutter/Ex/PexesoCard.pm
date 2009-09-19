@@ -54,35 +54,8 @@ sub new {
 }
 
 
-sub show_face {
-	my $self = shift;
-	$self->_animation_flip('cw');
-	$self->{is_showing_face} = TRUE;
-}
-
-
-sub show_back {
-	my $self = shift;
-	$self->_animation_flip('ccw');
-	$self->{is_showing_face} = FALSE;
-}
-
-
 sub flip {
 	my $self = shift;
-
-	if ($self->{is_showing_face}) {
-		$self->show_back();
-	}
-	else {
-		$self->show_face();
-	}
-}
-
-
-sub _animation_flip {
-	my $self = shift;
-	my ($direction) = @_;
 
 	# Normally a flip would go from (0 -> 180) or (180 -> 0). But since the flip
 	# is done in an animation flipping before a current animation is over will
@@ -92,19 +65,22 @@ sub _animation_flip {
 	#
 	# If the image is already rotated (in between a flip) then keep the
 	# current angle and resume the new rotation from that point
-	my @angles;
-	if ($direction eq 'cw') {
-		my ($angle) = $self->get_rotation('y-axis');
-		@angles = ($angle, 180);
+	my $direction;
+	my ($angle_start) = $self->get_rotation('y-axis');
+	my $angle_end;
+	if ($self->{is_showing_face}) {
+		$angle_end = 0;
+		$direction = 'ccw';
 	}
 	else {
-		my ($angle) = ($self->get_rotation('y-axis'));
-		@angles = ($angle, 0);
+		$angle_end = 180;
+		$direction = 'cw';
 	}
+	$self->{is_showing_face} = ! $self->{is_showing_face};
 
-	my $timeline = Clutter::Timeline->new(1000);
+	my $timeline = Clutter::Timeline->new(300);
 	my $alpha = Clutter::Alpha->new($timeline, 'linear');
-	my $behaviour = Clutter::Behaviour::Rotate->new($alpha, 'y-axis', $direction, @angles);
+	my $behaviour = Clutter::Behaviour::Rotate->new($alpha, 'y-axis', $direction, $angle_start, $angle_end);
 	$behaviour->set_center($self->get_width() / 2, 0, 0);
 	$behaviour->apply($self);
 	$timeline->start();
