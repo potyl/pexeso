@@ -36,19 +36,27 @@ sub new {
 	my ($args) = @_;
 	croak "Usage: ", __PACKAGE__, "->new(hashref)" unless ref $args eq 'HASH';
 
+
 	my ($front, $back) = @$args{qw(front back)};
 	my $self = Glib::Object::new($class);
 	$self->{front} = $front;
 	$self->{back} = $back;
 	$self->{is_showing_face} = TRUE;
 
-	# Flip the back card as it has to be facing the opposite direction
-	$back->set_rotation('y-axis', 180, $back->get_width/2, 0, 0);
+	# Set the gravity of the card faces to be in the center
+	$back->set_anchor_point_from_gravity('center');
+	$back->set_position($back->get_width/2, $back->get_height/2);
+
+	$front->set_anchor_point_from_gravity('center');
+	$front->set_position($front->get_width/2, $front->get_height/2);
 
 	$self->add($front, $back);
 
+	# Flip the back card as it has to be facing the opposite direction
+	$back->set_rotation('y-axis', 180, 0, 0, 0);
+
 	# A pexeso card starts with showing its back
-	$self->set_rotation('y-axis', 180, $self->get_width/2, 0, 0);;
+	$self->set_rotation('y-axis', 180, $self->get_width/2, 0, 0);
 
 	return $self;
 }
@@ -84,6 +92,24 @@ sub flip {
 	$behaviour->set_center($self->get_width() / 2, 0, 0);
 	$behaviour->apply($self);
 	$timeline->start();
+
+	$self->{behaviour} = $behaviour;
+}
+
+
+sub remove {
+	my $self = shift;
+
+	my $timeline = Clutter::Timeline->new(300);
+	my $alpha = Clutter::Alpha->new($timeline, 'linear');
+	my ($start, $end) = (1.0, 0.0);
+	my $behaviour = Clutter::Behaviour::Scale->new($alpha, $start, $start, $end, $end);
+	$behaviour->apply($self->{front});
+	$behaviour->apply($self->{back});
+	$timeline->start();
+	$timeline->signal_connect(completed => sub {
+		$self->hide();
+	});
 
 	$self->{behaviour} = $behaviour;
 }
