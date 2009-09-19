@@ -39,6 +39,8 @@ __PACKAGE__->mk_accessors qw(
 	urls
 	actors
 	parallel
+	card_1
+	card_2
 );
 
 
@@ -233,9 +235,57 @@ sub build_board {
 			$card->set_name("$i");
 			$card->set_reactive(TRUE);
 			$card->signal_connect('button-release-event', sub {
-				print "Card ", $card->get_name, "\n";
-				$card->flip();
+
+printf "Card1:   %s\n", $pexeso->card_1 ? $pexeso->card_1->get_name : 'NONE';
+printf "Card2:   %s\n", $pexeso->card_2 ? $pexeso->card_2->get_name : 'NONE';
+printf "Current: %s\n", $card->get_name;
+
+				if ($pexeso->card_1 && $pexeso->card_2) {
+					# Can't flip more cards, reset the other cards
+					print "Can't flip more than two cards, reset\n";
+					my $flip = TRUE;
+					# Flip the previous cards and show the new card
+					if ($pexeso->card_1 != $card) {
+						$pexeso->card_1->flip();
+					}
+					else {
+						$flip = FALSE;
+					}
+					$pexeso->card_1($card);
+
+					if ($pexeso->card_2 != $card) {
+						$pexeso->card_2->flip();
+					}
+					else {
+						$flip = FALSE;
+					}
+					$pexeso->card_2(undef);
+
+					$card->flip() if $flip;
+				}
+				elsif (! $pexeso->card_1) {
+					print "Set card1\n";
+					$pexeso->card_1($card);
+					$card->flip();
+				}
+				elsif ($pexeso->card_1 == $card) {
+					print "Can't flip card_1\n";
+				}
+
+				# Flipping the second card
+				elsif (! $pexeso->card_2) {
+					print "Set card2\n";
+					$pexeso->card_2($card);
+					$card->flip();
+
+					if ($pexeso->card_1->get_name eq $card->get_name) {
+						print "Matching cards!\n";
+					}
+				}
+
+printf "\n";
 			});
+
 			push @cards, $card;
 		}
 	}
