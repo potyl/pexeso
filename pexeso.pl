@@ -82,9 +82,7 @@ __PACKAGE__->mk_accessors qw(
 	rows
 	stage
 	backface
-	urls
 	actors
-	parallel
 	card_1
 	card_2
 	disable_selection
@@ -93,7 +91,7 @@ __PACKAGE__->mk_accessors qw(
 
 my $ICON_WIDTH = 80;
 my $ICON_HEIGHT = 80;
-
+my $MAX_WORKERS = 5;
 
 exit main();
 
@@ -107,7 +105,6 @@ sub main {
 		columns  => $columns,
 		rows     => $rows,
 		actors   => [],
-		parallel => 5,
 	});
 
 	$pexeso->construct_game();
@@ -221,12 +218,15 @@ sub parse_icon_list {
 
 	# Pick the icons to download
 	my @picked = shuffle @icons;
-	@picked = @picked[0 .. $max - 1];
-	$pexeso->urls(\@picked);
+	my $data = {
+		urls    => [ @picked[0 .. $max - 1] ],
+		workers => 0,
+	};
 
 	# Start to download the icons
-	for (1 .. $pexeso->parallel) {
-		$pexeso->download_next_icon();
+	for (1 .. $MAX_WORKERS) {
+		++$data->{workers};
+		$pexeso->download_next_icon($data);
 	}
 }
 
@@ -244,25 +244,26 @@ sub parse_icon_list {
 #
 sub download_next_icon {
 	my $pexeso = shift;
+	my ($data) = @_;
 
-	if (my $url = pop @{ $pexeso->urls }) {
+	if (my $url = pop @{ $data->{urls} }) {
 		# Asyncrhonous download the list of icons available
 		http_request(
 			GET     => $url,
 			timeout => 10,
 			sub {
 				$pexeso->parse_icon($url, @_);
-				$pexeso->download_next_icon();
+				$pexeso->download_next_icon($data);
 			},
 		);
 		return;
 	}
 
 	# No more icons to download
-	$pexeso->parallel($pexeso->parallel - 1);
+	--$data->{workers};
 
 	# When the last worker has finished place the cards in the board
-	if (! $pexeso->parallel) {
+	if ($data->{workers} == 0) {
 		$pexeso->place_cards();
 	}
 }
