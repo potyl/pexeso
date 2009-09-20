@@ -84,7 +84,9 @@ __PACKAGE__->mk_accessors qw(
 	backface
 	card_1
 	card_2
+	number_pairs
 	disable_selection
+	timeline
 );
 
 
@@ -324,8 +326,7 @@ sub parse_icon {
 sub place_cards {
 	my $pexeso = shift;
 	my (@actors) = @_;
-
-	my $stage = $pexeso->stage;
+	$pexeso->number_pairs(scalar @actors);
 
 	# Collect the cards to show. For each original card generate a matching
 	# card (clone) in order to get a pair.
@@ -342,7 +343,7 @@ sub place_cards {
 				back  => Clutter::Clone->new($pexeso->backface),
 			});
 
-			$stage->add($card);
+			$pexeso->stage->add($card);
 			$card->set_name("$i");
 			$card->set_reactive(TRUE);
 			$card->signal_connect('button-release-event', sub {
@@ -434,17 +435,41 @@ sub matching_pair {
 
 	# Don't let the user pick new cards until we remove the matching pair
 	$pexeso->disable_selection(1);
+	--$pexeso->{number_pairs};
 
 	Glib::Timeout->add(500, sub {
-		# Hide the cards
-		$pexeso->card_1->fade();
-		$pexeso->card_1(undef);
-		$pexeso->card_2->fade();
-		$pexeso->card_2(undef);
-		$pexeso->disable_selection(0);
+		$pexeso->matching_pair_animation();
 		return FALSE;
 	});
 }
+
+
+#
+# The animation to run when a matching pair is found.
+#
+sub matching_pair_animation {
+	my $pexeso = shift;
+	my $timeline = Clutter::Timeline->new(300);
+
+	# Hide the cards
+	$pexeso->card_1->fade($timeline);
+	$pexeso->card_1(undef);
+	$pexeso->card_2->fade($timeline);
+	$pexeso->card_2(undef);
+	$pexeso->disable_selection(0);
+
+	if ($pexeso->{number_pairs} == 0) {
+		$timeline->signal_connect(completed => sub {
+			$pexeso->quit();
+		});
+	}
+
+	# Start the timeline and keep a reference otherwise the signal connected
+	# here will not run
+	$timeline->start();
+	$pexeso->timeline($timeline);
+}
+
 
 #
 # Called to quit the game. If an optional error messages is passed it will be
