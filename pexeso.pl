@@ -253,7 +253,7 @@ sub build_board {
 	@cards = shuffle @cards;
 	for (my $row = 0; $row < $pexeso->rows; ++$row) {
 		for (my $column = 0; $column < $pexeso->columns; ++$column) {
-			my $card = pop @cards;
+			my $card = pop @cards or return;
 			$card->set_position($column * $ICON_WIDTH, $row * $ICON_HEIGHT);
 			$card->show();
 		}
