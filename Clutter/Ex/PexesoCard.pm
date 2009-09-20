@@ -17,6 +17,10 @@ Representation of a card. A card consists for two actors: back face and front
 face that act together as a single entity. A card can be flipped to show the
 front face or the back face.
 
+=head1 METHODS
+
+The following methods are available:
+
 =cut
 
 package Clutter::Ex::PexesoCard;
@@ -30,6 +34,19 @@ use Carp;
 
 use Glib::Object::Subclass 'Clutter::Group';
 
+=head2 new
+
+Creates a new card with the two given faces. The card is placed so that the back
+of the card is shown.
+
+Usage:
+
+	my $card = Clutter::Ex::PexesoCard->new({
+		front => $front_actor,
+		back  => $back_actor,
+	});
+
+=cut
 
 sub new {
 	my $class = shift;
@@ -60,6 +77,12 @@ sub new {
 	return $self;
 }
 
+
+=head2 flip
+
+Flips the card with an animation in order to show the other side.
+
+=cut
 
 sub flip {
 	my $self = shift;
@@ -99,6 +122,12 @@ sub flip {
 	$self->{rotation} = $rotation;
 }
 
+
+=head2 fade
+
+Hides the card with an animation.
+
+=cut
 
 sub fade {
 	my $self = shift;
@@ -155,6 +184,6 @@ sub PAINT {
 	Clutter::Cogl->set_backface_culling_enabled($culling);
 }
 
-
 # Return a true value
 1;
+
