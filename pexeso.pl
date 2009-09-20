@@ -82,7 +82,6 @@ __PACKAGE__->mk_accessors qw(
 	rows
 	stage
 	backface
-	actors
 	card_1
 	card_2
 	disable_selection
@@ -104,7 +103,6 @@ sub main {
 	my $pexeso = __PACKAGE__->new({
 		columns  => $columns,
 		rows     => $rows,
-		actors   => [],
 	});
 
 	$pexeso->construct_game();
@@ -221,6 +219,7 @@ sub parse_icon_list {
 	my $data = {
 		urls    => [ @picked[0 .. $max - 1] ],
 		workers => 0,
+		actors  => [],
 	};
 
 	# Start to download the icons
@@ -252,7 +251,8 @@ sub download_next_icon {
 			GET     => $url,
 			timeout => 10,
 			sub {
-				$pexeso->parse_icon($url, @_);
+				my $actor = $pexeso->parse_icon($url, @_);
+				push @{ $data->{actors} }, $actor;
 				$pexeso->download_next_icon($data);
 			},
 		);
@@ -264,7 +264,7 @@ sub download_next_icon {
 
 	# When the last worker has finished place the cards in the board
 	if ($data->{workers} == 0) {
-		$pexeso->place_cards();
+		$pexeso->place_cards(@{ $data->{actors} });
 	}
 }
 
@@ -305,7 +305,7 @@ sub parse_icon {
 		[]
 	);
 
-	my $count = push @{ $pexeso->actors }, $texture;
+	return $texture;
 }
 
 
@@ -323,8 +323,7 @@ sub parse_icon {
 #
 sub place_cards {
 	my $pexeso = shift;
-
-	my @actors = @{ delete $pexeso->{actors} };
+	my (@actors) = @_;
 
 	my $stage = $pexeso->stage;
 
