@@ -125,14 +125,21 @@ sub flip {
 
 =head2 fade
 
-Hides the card with an animation.
+Hides the card with an animation. This method is expected to be called for
+hidding matching pairs, therefore it will accept a timeline that can be shared
+by both cards.
 
 =cut
 
 sub fade {
 	my $self = shift;
+	my ($timeline) = @_;
 
-	my $timeline = Clutter::Timeline->new(300);
+	my $shared = 1;
+	if ($timeline) {
+		$timeline = Clutter::Timeline->new(300);
+		$shared = 0;
+	}
 	my $alpha = Clutter::Alpha->new($timeline, 'linear');
 	my ($start, $end) = (1.0, 0.0);
 
@@ -153,7 +160,6 @@ sub fade {
 
 
 	# Start the timeline and once it is over hide the card
-	$timeline->start();
 	$timeline->signal_connect(completed => sub {
 		$self->hide();
 		delete $self->{zoom};
@@ -165,6 +171,9 @@ sub fade {
 	$self->{zoom} = $zoom;
 	$self->{rotation} = $rotation;
 	$self->{transparent} = $transparent;
+
+	# Start the timeline only if the timeline is not shared
+	$timeline->start() unless $shared;
 }
 
 
