@@ -145,7 +145,6 @@ sub fade {
 
 	# Shrink the card
 	my $zoom = Clutter::Behaviour::Scale->new($alpha, $start, $start, $end, $end);
-#	$zoom->apply($self);
 	$zoom->apply($self->{front});
 	$zoom->apply($self->{back});
 
