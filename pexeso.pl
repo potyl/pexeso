@@ -124,6 +124,8 @@ sub construct_game {
 	# The main clutter stage
 	my $stage = Clutter::Stage->get_default();
 	$pexeso->stage($stage);
+
+	$stage->set_color(Clutter::Color->new(0xb4, 0xcf, 0xec));
 	$stage->set_size(
 		$pexeso->columns * $ICON_WIDTH,
 		$pexeso->rows * $ICON_HEIGHT,
