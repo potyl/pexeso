@@ -458,9 +458,10 @@ sub matching_pair_animation {
 	$pexeso->card_2(undef);
 	$pexeso->disable_selection(0);
 
-	if ($pexeso->{number_pairs} == 0) {
+	if ($pexeso->number_pairs == 0) {
 		$timeline->signal_connect(completed => sub {
-			$pexeso->quit();
+			#$pexeso->quit("Game completed. You win!");
+			$pexeso->winning_screen();
 		});
 	}
 
@@ -468,6 +469,56 @@ sub matching_pair_animation {
 	# here will not run
 	$timeline->start();
 	$pexeso->timeline($timeline);
+}
+
+
+#
+# Called to display a winning screen.
+#
+sub winning_screen {
+	my $pexeso = shift;
+	my $stage = $pexeso->stage;
+
+	my $label = Clutter::Text->new("Sans 20", "You won!");
+	$label->set_anchor_point_from_gravity('center');
+	$label->set_position(
+		($stage->get_width/2),
+		($stage->get_height/2),
+	);
+	$label->show();
+	$stage->add($label);
+
+
+	# Animate the victory text
+	my $timeline = Clutter::Timeline->new(300);
+	my $alpha = Clutter::Alpha->new($timeline, 'linear');
+
+	# Expand the card
+	my $zoom = Clutter::Behaviour::Scale->new($alpha, 1.0, 1.0, 1.5, 1.5);
+	$zoom->apply($label);
+
+	# Keep a handle to the behaviours otherwise they wont be applied
+	$pexeso->{zoom} = $zoom;
+
+	# Start an infinite loop that will end after two iterations. In the first
+	# iteration the text is zoomed in a linear way and at the second iteration
+	# the text is zoomed out with a bouncy effect. Afterwards the animation is
+	# stopped.
+	$timeline->set_loop(TRUE);
+	my $count = 0;
+	$timeline->signal_connect(completed => sub {
+		++$count;
+		if ($count == 2) {
+			$timeline->stop();
+			return;
+		}
+
+		# Reverse the animation once completed
+		$alpha->set_mode('ease-in-bounce');
+		my $reverse = $timeline->get_direction eq 'forward' ? 'backward' : 'forward';
+		$timeline->set_direction($reverse);
+	});
+	$timeline->start()
 }
 
 
