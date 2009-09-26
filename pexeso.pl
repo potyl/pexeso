@@ -479,7 +479,11 @@ sub winning_screen {
 	my $pexeso = shift;
 	my $stage = $pexeso->stage;
 
-	my $label = Clutter::Text->new("Sans 20", "You won!");
+	my $label = Clutter::Text->new(
+		"Purisa Bold Italic 20",
+		"You won!",
+		Clutter::Color->new(0xFF, 0x80, 0x40, 0xFF),
+	);
 	$label->set_anchor_point_from_gravity('center');
 	$label->set_position(
 		($stage->get_width/2),
