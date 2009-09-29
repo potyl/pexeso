@@ -30,22 +30,22 @@ sub main {
 	my $stage = Clutter::Stage->get_default();
 	$stage->set_size(300, 300);
 
-
-	my $progress = create_progess($stage->get_width/2, $stage->get_height/2);
+	my ($middle_x, $middle_y) = ($stage->get_width/2, $stage->get_height/2);
+	my $progress = create_progess($middle_x, $middle_y);
 	$stage->add($progress);
 
 
 	my $middle = Clutter::Rectangle->new(Clutter::Color->new(0, 0, 0xff, 0xff));
 	$middle->set_size(2, 2);
 	$middle->set_anchor_point_from_gravity('center');
-#	$middle->set_position(($stage->get_width - $middle->get_width)/2, ($stage->get_height - $middle->get_height)/2);
-	$middle->set_position($stage->get_width/2, $stage->get_height/2);
+	$middle->set_position($middle_x, $middle_y);
 	$stage->add($middle);
 
 	my $angle = 0;
 	$stage->signal_connect('button-release-event', sub {
 		$angle = ($angle + 15) % 360;
-		$progress->set_rotation('z-axis', $angle, 0, ($progress->get_width/2 + 50), 0);
+		my $y = $progress->get_height/2 + 10;
+		$progress->set_rotation('z-axis', $angle, 0, $y, 0);
 	});
 
 	$stage->show_all();
