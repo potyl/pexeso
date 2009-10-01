@@ -46,12 +46,7 @@ sub main {
 	$middle->set_position($middle_x, $middle_y);
 	$stage->add($middle);
 
-
-	my $angle = 0;
 	$stage->signal_connect('button-release-event', sub {
-		$angle = ($angle + 15) % 360;
-		my $y = $progress->get_height/2 + 10;
-		#$progress->set_rotation('z-axis', $angle, 0, $y, 0);
 		$progress->pulse();
 	});
 
