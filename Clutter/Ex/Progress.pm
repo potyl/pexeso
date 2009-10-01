@@ -25,6 +25,7 @@ use warnings;
 
 use Glib qw(TRUE FALSE);
 use Clutter;
+use Math::Trig qw(:pi);
 
 use Glib::Object::Subclass 'Clutter::Group';
 
@@ -47,7 +48,7 @@ sub new {
 
 
 	my $self = Glib::Object::new($class);
-	
+
 	$self->create_actors(0, 0);
 
 	return $self;
@@ -64,26 +65,30 @@ sub create_actors {
 	my $bars = 12;
 	$self->{angle} = 360/$bars;
 	foreach my $i (0 .. $bars - 1) {
-		my $bar = Clutter::Rectangle->new(
-			Clutter::Color->new(0xFF, 0x00, 0x00, 0xFF)
-		);
-		$bar->set_size(4, 12);
+		my $bar = Clutter::CairoTexture->new(4, 12);
+		my $cr = $bar->create_context();
+		if ($i < 3) {
+			$cr->set_source_rgba(1, 0, 0, 0.5);
+		}
+		else {
+			$cr->set_source_rgba(0, 0, 1, 0.5);
+		}
+		$cr->arc(2, 6, 2, 0, pi2);
+		$cr->fill();
+
 		my $gravity = $bar->get_height/2 + $gap;
 
 		$bar->set_anchor_point_from_gravity('center');
 		$bar->set_position($x, $y - $gravity);
 
 		$bar->set_rotation('z-axis', $i * $self->{angle}, 0, $gravity, 0);
-		
+
 		push @bars, $bar;
 		$self->add($bar);
 	}
-	
+
 	$self->{bars} = \@bars;
 	$self->{i} = 0;
-	for (my $self->{i} = 0; $self->{i} < 3; ++$self->{i}) {
-		$bars[$self->{i}]->set_color(Clutter::Color->new(0x00, 0x00, 0xFF, 0xFF));
-	}
 }
 
 
@@ -93,7 +98,7 @@ sub pulse {
 	if ($self->{i} == @{ $self->{bars} }) {
 		$self->{i} = 0;
 	}
-	$self->set_rotation('z-axis', $self->{i} * $self->{angle}, 0, 0, 0);	
+	$self->set_rotation('z-axis', $self->{i} * $self->{angle}, 0, 0, 0);
 }
 
 
