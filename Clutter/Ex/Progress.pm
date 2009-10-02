@@ -59,22 +59,39 @@ sub create_actors {
 	my $self = shift;
 	my ($x, $y) = @_;
 
-	my $gap = 8;
+	my $gap = 20;
 
 	my @bars;
 	my $bars = 12;
 	$self->{angle} = 360/$bars;
+
+	my ($actor_on, $actor_off);
+
 	foreach my $i (0 .. $bars - 1) {
-		my $bar = Clutter::CairoTexture->new(4, 12);
-		my $cr = $bar->create_context();
+
+		my $bar;
 		if ($i < 3) {
-			$cr->set_source_rgba(1, 0, 0, 0.5);
+			# Dot on
+			if ($actor_on) {
+				$bar = Clutter::Clone->new($actor_on);
+			}
+			else {
+				my @rgba = (1, 0, 0, 0.5);
+				$actor_on = create_unit(TRUE, @rgba);
+				$bar = $actor_on;
+			}
 		}
 		else {
-			$cr->set_source_rgba(0, 0, 1, 0.5);
+			# Dot off
+			if ($actor_off) {
+				$bar = Clutter::Clone->new($actor_off);
+			}
+			else {
+				my @rgba = (0, 0, 1, 0.5);
+				$actor_off = create_unit(FALSE, @rgba);
+				$bar = $actor_off;
+			}
 		}
-		$cr->arc(2, 6, 2, 0, pi2);
-		$cr->fill();
 
 		my $gravity = $bar->get_height/2 + $gap;
 
@@ -100,6 +117,30 @@ sub pulse {
 	}
 	$self->set_rotation('z-axis', $self->{i} * $self->{angle}, 0, 0, 0);
 }
+
+
+sub create_unit {
+	my ($kind, @rgba) = @_;
+
+	my ($w, $h) = (25, 25);
+	if ($kind) {
+#		($w, $h) = map { $_ * 1.5 } ($w, $h);
+	}
+
+	my $actor = Clutter::CairoTexture->new($w, $h);
+	printf "Width: %d, Height: %d\n", $actor->get_size;
+	my $cr = $actor->create_context();
+	$cr->set_source_rgba(@rgba);
+	$cr->arc(
+		$w/2, $h/2,
+		$w/4, # Radius
+		0, pi2 # radians (start, end)
+	);
+	$cr->fill();
+
+	return $actor;
+}
+
 
 
 # A true value
