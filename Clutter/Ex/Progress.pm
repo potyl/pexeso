@@ -218,7 +218,9 @@ sub create_animation {
 	my $timeline = Clutter::Timeline->new($time);
 	my $alpha = Clutter::Alpha->new($timeline, 'linear');
 
-	my $rotation = Clutter::Behaviour::Rotate->new($alpha, 'z-axis', 'cw', $angle_start, $angle_end);
+	my $rotation = Clutter::Behaviour::Rotate->new(
+		$alpha, 'z-axis', 'cw', $angle_start, $angle_end
+	);
 	$rotation->set_center(0, 0, 0);
 	$rotation->apply($self);
 
