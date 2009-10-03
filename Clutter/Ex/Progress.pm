@@ -54,6 +54,7 @@ sub new {
 	my $self = Glib::Object::new($class);
 
 	$self->{actors} = 12;
+	$self->{angle_step} = 360 / $self->{actors};
 	$self->create_actors();
 
 	return $self;
@@ -65,8 +66,6 @@ sub create_actors {
 	my ($x, $y) = (0, 0);
 
 	my $gap = 20;
-
-	$self->{angle_step} = 360 / $self->{actors};
 
 	my $size_step = 0.025;
 	my $size = 0.8;
