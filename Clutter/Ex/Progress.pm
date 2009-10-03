@@ -63,10 +63,9 @@ sub create_actors {
 
 	my @bars;
 	my $bars = 12;
-	$self->{angle} = 360/$bars;
+	$self->{angle_step} = 360/$bars;
 
 	my ($actor_on, $actor_off);
-
 	foreach my $i (0 .. $bars - 1) {
 
 		my $bar;
@@ -77,7 +76,7 @@ sub create_actors {
 			}
 			else {
 				my @rgba = (1, 0, 0, 0.5);
-				$actor_on = create_unit(TRUE, @rgba);
+				$actor_on = create_bar(TRUE, @rgba);
 				$bar = $actor_on;
 			}
 		}
@@ -88,18 +87,18 @@ sub create_actors {
 			}
 			else {
 				my @rgba = (0, 0, 1, 0.5);
-				$actor_off = create_unit(FALSE, @rgba);
+				$actor_off = create_bar(FALSE, @rgba);
 				$bar = $actor_off;
 			}
 		}
 
-		my $gravity = $bar->get_height/2 + $gap;
+		$self->{gravity} ||= $bar->get_height/2 + $gap;
 
 		$bar->set_anchor_point_from_gravity('center');
-		$bar->set_position($x, $y - $gravity);
+		$bar->set_position($x, $y - $self->{gravity});
 
-		$bar->set_rotation('z-axis', $i * $self->{angle}, 0, $gravity, 0);
-
+		$bar->{angle} = $i * $self->{angle_step};
+		$bar->set_rotation('z-axis', $bar->{angle}, 0, $self->{gravity}, 0);
 		push @bars, $bar;
 		$self->add($bar);
 	}
@@ -111,15 +110,14 @@ sub create_actors {
 
 sub pulse {
 	my $self = shift;
-	$self->{i} = $self->{i} + 1;
-	if ($self->{i} == @{ $self->{bars} }) {
-		$self->{i} = 0;
+	foreach my $bar (@{ $self->{bars} }) {
+		$bar->{angle} += $self->{angle_step};
+		$bar->set_rotation('z-axis', $bar->{angle}, 0, $self->{gravity}, 0);
 	}
-	$self->set_rotation('z-axis', $self->{i} * $self->{angle}, 0, 0, 0);
 }
 
 
-sub create_unit {
+sub create_bar {
 	my ($kind, @rgba) = @_;
 
 	my ($w, $h) = (25, 25);
@@ -128,7 +126,6 @@ sub create_unit {
 	}
 
 	my $actor = Clutter::CairoTexture->new($w, $h);
-	printf "Width: %d, Height: %d\n", $actor->get_size;
 	my $cr = $actor->create_context();
 	$cr->set_source_rgba(@rgba);
 	$cr->arc(
