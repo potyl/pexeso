@@ -36,18 +36,25 @@ sub main {
 
 	# Create a progress bar
 	my $progress = Clutter::Ex::Progress->new();
-	$progress->set_position($middle_x, $middle_y);
+#	$progress->set_position($middle_x, $middle_y);
+	$progress->set_position(100, 100);
 	$stage->add($progress);
 
-	# A point in the middle of the screen as a reference
-	my $middle = Clutter::Rectangle->new(Clutter::Color->new(0, 0, 0xff, 0xff));
-	$middle->set_size(2, 2);
-	$middle->set_anchor_point_from_gravity('center');
-	$middle->set_position($middle_x, $middle_y);
-	$stage->add($middle);
-
 	$stage->signal_connect('button-release-event', sub {
-		$progress->pulse_animation();
+		my ($actor, $event) = @_;
+		print "event ", $event->button, "\n";
+		if ($event->button == 1) {
+			print "Start\n";
+			$progress->pulse_animation_start();
+		}
+		elsif ($event->button == 2) {
+			print "Stop\n";
+			$progress->pulse_animation_stop();
+		}
+		else {
+			print "Once\n";
+			$progress->pulse_animation_once();
+		}
 	});
 
 	$stage->show_all();
