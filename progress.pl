@@ -54,6 +54,7 @@ sub main {
 	});
 
 	$stage->show_all();
+	$progress->hide();
 	Clutter->main();
 	return 0;
 }

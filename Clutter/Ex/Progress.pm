@@ -142,6 +142,7 @@ sub pulse_animation_start {
 	my $self = shift;
 
 	return if $self->{animation};
+	$self->show();
 
 	my $animation = $self->create_animation(360);
 	my $timeline = $animation->get_alpha->get_timeline;
