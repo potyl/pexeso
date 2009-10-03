@@ -6,11 +6,29 @@ Clutter::Ex::Progress - A progress pacifier.
 
 =head1 SYNOPSIS
 
-	my $card = Clutter::Ex::Progress->new();
+	my $progress = Clutter::Ex::Progress->new();
+	$progress->set_position(100, 100);
+	$stage->add($progress);
+
+	$stage->signal_connect('button-release-event', sub {
+		my ($actor, $event) = @_;
+		if ($event->button == 1) {
+			print "Start\n";
+			$progress->pulse_animation_start();
+		}
+		elsif ($event->button == 2) {
+			print "Stop\n";
+			$progress->pulse_animation_stop();
+		}
+		else {
+			print "Once\n";
+			$progress->pulse_animation_step();
+		}
+	});
 
 =head1 DESCRIPTION
 
-Show a progress pacifier.
+A progress pacifier that can be animated.
 
 =head1 METHODS
 
@@ -35,15 +53,11 @@ my $TIME = 2_000;
 
 =head2 new
 
-Creates a new card with the two given faces. The card is placed so that the back
-of the card is shown.
+Creates a new progress pacifier.
 
 Usage:
 
-	my $card = Clutter::Ex::PexesoCard->new({
-		front => $front_actor,
-		back  => $back_actor,
-	});
+	my $card = Clutter::Ex::Progress->new();
 
 =cut
 
@@ -61,11 +75,11 @@ sub new {
 }
 
 
+#
+# Creates the actors that go into the progress group.
+#
 sub create_actors {
 	my $self = shift;
-	my ($x, $y) = (0, 0);
-
-	my $gap = 20;
 
 	my $size_step = 0.025;
 	my $size = 0.8;
@@ -78,9 +92,9 @@ sub create_actors {
 
 		my $actor = create_actor($size, @rgba);
 
-		my $gravity = $actor->get_height/2 + $gap;
+		my $gravity = $actor->get_height/2 + 20; # Gap of 20
 		$actor->set_anchor_point_from_gravity('center');
-		$actor->set_position($x, $y - $gravity);
+		$actor->set_position(0, 0 - $gravity);
 
 		$actor->{angle} = $i * $self->{angle_step};
 		$actor->set_rotation('z-axis', $actor->{angle}, 0, $gravity, 0);
@@ -90,7 +104,13 @@ sub create_actors {
 }
 
 
-sub pulse_animation_once {
+=head2 pulse_animation_step
+
+Animates the progress group of one step.
+
+=cut
+
+sub pulse_animation_step {
 	my $self = shift;
 
 	return if $self->{animation};
@@ -110,6 +130,13 @@ sub pulse_animation_once {
 }
 
 
+=head2 pulse_animation_start
+
+Animates the progress group continuously until pulse_animation_stop() is
+called.
+
+=cut
+
 sub pulse_animation_start {
 	my $self = shift;
 
@@ -122,6 +149,12 @@ sub pulse_animation_start {
 	$self->{animation} = $animation;
 }
 
+
+=head2 pulse_animation_stop
+
+Stop a previous animation that was started with pulse_animation_start().
+
+=cut
 
 sub pulse_animation_stop {
 	my $self = shift;
@@ -140,9 +173,13 @@ sub pulse_animation_stop {
 }
 
 
+#
+# Creates a single actor that will be displayed in the progress group.
+#
 sub create_actor {
 	my ($size, @rgba) = @_;
 	my ($w, $h) = (25, 25);
+
 	my $actor = Clutter::CairoTexture->new($w, $h);
 	my $cr = $actor->create_context();
 	$cr->set_source_rgba(@rgba);
@@ -164,21 +201,18 @@ sub create_actor {
 }
 
 
-sub clamp_degrees {
-	my ($angle) = @_;
-	$angle -= 360 while ($angle > 360);
-	return $angle;
-}
-
-
+#
+# Creates an animation that will last the right time in order to move from the
+# current angle until the end angle.
+#
 sub create_animation {
 	my $self = shift;
 	my ($angle_end) = @_;
 
 	my ($angle_start) = $self->get_rotation('z-axis');
-	$angle_start = clamp_degrees($angle_start);
-	$angle_start = 0 if $angle_start == 360;
+	$angle_start -= 360 while ($angle_start >= 360);
 
+	# Calculate the time needed for the animation in order to complete
 	my $time = ($angle_end - $angle_start) * $TIME / 360;
 
 	my $timeline = Clutter::Timeline->new($time);
