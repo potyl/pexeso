@@ -79,12 +79,12 @@ sub create_actors {
 
 		my $actor = create_actor($size, @rgba);
 
-		$self->{gravity} ||= $actor->get_height/2 + $gap;
+		my $gravity = $actor->get_height/2 + $gap;
 		$actor->set_anchor_point_from_gravity('center');
-		$actor->set_position($x, $y - $self->{gravity});
+		$actor->set_position($x, $y - $gravity);
 
 		$actor->{angle} = $i * $self->{angle_step};
-		$actor->set_rotation('z-axis', $actor->{angle}, 0, $self->{gravity}, 0);
+		$actor->set_rotation('z-axis', $actor->{angle}, 0, $gravity, 0);
 
 		$self->add($actor);
 	}
