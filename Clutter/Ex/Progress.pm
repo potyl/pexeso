@@ -108,12 +108,31 @@ sub create_actors {
 }
 
 
-sub pulse {
+sub pulse_iteration {
 	my $self = shift;
 	foreach my $bar (@{ $self->{bars} }) {
 		$bar->{angle} += $self->{angle_step};
 		$bar->set_rotation('z-axis', $bar->{angle}, 0, $self->{gravity}, 0);
 	}
+}
+
+
+sub pulse_animation {
+	my $self = shift;
+	my $timeline = Clutter::Timeline->new(2000);
+	my $alpha = Clutter::Alpha->new($timeline, 'linear');
+
+	my $rotation = Clutter::Behaviour::Rotate->new($alpha, 'z-axis', 'cw', 0, 360);
+	$rotation->set_center(0, 0, 0);
+	$rotation->apply($self);
+
+	my $zoom = Clutter::Behaviour::Scale->new($alpha, 1, 1, 2, 2);
+	$zoom->apply($self->{bars}[0]);
+
+
+	$timeline->set_loop(TRUE);
+	$timeline->start();
+	$self->{rotation} = $rotation;
 }
 
 

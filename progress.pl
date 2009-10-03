@@ -47,7 +47,7 @@ sub main {
 	$stage->add($middle);
 
 	$stage->signal_connect('button-release-event', sub {
-		$progress->pulse();
+		$progress->pulse_animation();
 	});
 
 	$stage->show_all();
