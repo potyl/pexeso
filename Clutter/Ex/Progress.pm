@@ -61,63 +61,56 @@ sub create_actors {
 
 	my $gap = 20;
 
-	my @bars;
-	my $bars = 12;
-	$self->{angle_step} = 360/$bars;
+	my @actors;
+	my $actors = 12;
+	$self->{angle_step} = 360/$actors;
 
-	my ($actor_on, $actor_off);
-	foreach my $i (0 .. $bars - 1) {
+	my $size_step = 0.025;
+	my $size = 0.8;
+	my @rgba = (0.3, 0.3, 0.3, 0.5);
+	foreach my $i (0 .. $actors - 1) {
 
-		my $bar;
-		if ($i < 3) {
-			# Dot on
-			if ($actor_on) {
-				$bar = Clutter::Clone->new($actor_on);
-			}
-			else {
-				my @rgba = (1, 0, 0, 0.5);
-				$actor_on = create_bar(TRUE, @rgba);
-				$bar = $actor_on;
-			}
-		}
-		else {
-			# Dot off
-			if ($actor_off) {
-				$bar = Clutter::Clone->new($actor_off);
-			}
-			else {
-				my @rgba = (0, 0, 1, 0.5);
-				$actor_off = create_bar(FALSE, @rgba);
-				$bar = $actor_off;
-			}
-		}
+		# Grow the bars and change their transparency
+		$size += $size_step;
+		$rgba[3] -= 0.0125;
 
-		$self->{gravity} ||= $bar->get_height/2 + $gap;
+		my $actor = create_actor($size, @rgba);
 
-		$bar->set_anchor_point_from_gravity('center');
-		$bar->set_position($x, $y - $self->{gravity});
+		$self->{gravity} ||= $actor->get_height/2 + $gap;
+		$actor->set_anchor_point_from_gravity('center');
+		$actor->set_position($x, $y - $self->{gravity});
 
-		$bar->{angle} = $i * $self->{angle_step};
-		$bar->set_rotation('z-axis', $bar->{angle}, 0, $self->{gravity}, 0);
-		push @bars, $bar;
-		$self->add($bar);
+		$actor->{angle} = $i * $self->{angle_step};
+		$actor->set_rotation('z-axis', $actor->{angle}, 0, $self->{gravity}, 0);
+		push @actors, $actor;
+		$self->add($actor);
 	}
 
-	$self->{bars} = \@bars;
-	$self->{i} = 0;
+	$self->{actors} = \@actors;
 }
 
 
-sub pulse_iteration {
+sub pulse_animation_once {
 	my $self = shift;
-	foreach my $bar (@{ $self->{bars} }) {
-		$bar->{angle} += $self->{angle_step};
-		$bar->set_rotation('z-axis', $bar->{angle}, 0, $self->{gravity}, 0);
-	}
+
+	# Animate a single frames
+	my $timeline = Clutter::Timeline->new(2000 / @{ $self->{actors} });
+	my $alpha = Clutter::Alpha->new($timeline, 'linear');
+
+	my ($angle_start) = $self->get_rotation('z-axis');
+	$angle_start = clamp_degrees($angle_start);
+	my $angle_end = clamp_degrees($angle_start + $self->{angle_step});
+
+	my $rotation = Clutter::Behaviour::Rotate->new($alpha, 'z-axis', 'cw', $angle_start, $angle_end);
+	$rotation->set_center(0, 0, 0);
+	$rotation->apply($self);
+
+	$timeline->start();
+	$self->{rotation} = $rotation;
 }
 
 
-sub pulse_animation {
+sub pulse_animation_start {
 	my $self = shift;
 	my $timeline = Clutter::Timeline->new(2000);
 	my $alpha = Clutter::Alpha->new($timeline, 'linear');
@@ -126,37 +119,48 @@ sub pulse_animation {
 	$rotation->set_center(0, 0, 0);
 	$rotation->apply($self);
 
-	my $zoom = Clutter::Behaviour::Scale->new($alpha, 1, 1, 2, 2);
-	$zoom->apply($self->{bars}[0]);
-
-
 	$timeline->set_loop(TRUE);
 	$timeline->start();
 	$self->{rotation} = $rotation;
 }
 
 
-sub create_bar {
-	my ($kind, @rgba) = @_;
+sub pulse_animation_stop {
+	my $self = shift;
+	my $rotation = delete $self->{rotation};
+	$rotation->get_alpha->get_timeline->stop() if $rotation;
+}
 
+
+sub create_actor {
+	my ($size, @rgba) = @_;
 	my ($w, $h) = (25, 25);
-	if ($kind) {
-#		($w, $h) = map { $_ * 1.5 } ($w, $h);
-	}
-
 	my $actor = Clutter::CairoTexture->new($w, $h);
 	my $cr = $actor->create_context();
 	$cr->set_source_rgba(@rgba);
 	$cr->arc(
 		$w/2, $h/2,
-		$w/4, # Radius
+		$w/4 * $size, # Radius
 		0, pi2 # radians (start, end)
 	);
 	$cr->fill();
 
+	# Surrounding box
+	if (FALSE) {
+		$cr->set_source_rgba(0, 0, 0, 1.0);
+		$cr->rectangle(0, 0, $w, $h);
+		$cr->stroke();
+	}
+
 	return $actor;
 }
 
+
+sub clamp_degrees {
+	my ($angle) = @_;
+	$angle -= 360 while ($angle > 360);
+	return $angle;
+}
 
 
 # A true value
