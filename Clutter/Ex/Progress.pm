@@ -115,6 +115,7 @@ sub pulse_animation_step {
 
 	return if $self->{animation};
 	$self->{once_iter} ||= 0;
+	$self->show();
 
 	my $angle = ++$self->{once_iter} * $self->{angle_step};
 	$self->{once_iter} = 0 if $self->{once_iter} == $self->{actors};
@@ -169,6 +170,7 @@ sub pulse_animation_stop {
 		# If we want to continue with a pulse_animation_once then resume from
 		# the start.
 		delete $self->{once_iter};
+		$self->hide();
 	});
 }
 
