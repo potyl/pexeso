@@ -67,7 +67,8 @@ use lib "$FindBin::Bin";
 use Glib qw(TRUE FALSE);
 use Gtk2;
 use Clutter::Ex::PexesoCard;
-use Clutter qw(-threads-init -init);
+use Clutter::Ex::Progress;
+use Clutter qw(-init);
 use Data::Dumper;
 use AnyEvent::HTTP;
 use XML::LibXML;
@@ -87,6 +88,7 @@ __PACKAGE__->mk_accessors qw(
 	number_pairs
 	disable_selection
 	timeline
+	progress
 );
 
 
@@ -170,6 +172,14 @@ sub play_game {
 #
 sub download_icon_list {
 	my $pexeso = shift;
+
+	my $progress = Clutter::Ex::Progress->new();
+	my $stage = $pexeso->stage;
+	$progress->set_position($stage->get_width/2, $stage->get_height/2);
+	$stage->add($progress);
+	$progress->pulse_animation_start();
+	$pexeso->progress($progress);
+
 
 	my $uri = URI->new('http://hexten.net/cpan-faces/');
 
@@ -365,6 +375,9 @@ sub place_cards {
 			$card->show();
 		}
 	}
+
+	# Stop the progress animation
+	$pexeso->progress->pulse_animation_stop();
 }
 
 
