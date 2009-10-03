@@ -43,16 +43,13 @@ sub main {
 	$stage->signal_connect('button-release-event', sub {
 		my ($actor, $event) = @_;
 		if ($event->button == 1) {
-			print "Start\n";
 			$progress->pulse_animation_start();
 		}
 		elsif ($event->button == 2) {
-			print "Stop\n";
 			$progress->pulse_animation_stop();
 		}
 		else {
-			print "Once\n";
-			$progress->pulse_animation_once();
+			$progress->pulse_animation_step();
 		}
 	});
 
