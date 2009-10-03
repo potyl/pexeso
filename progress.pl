@@ -42,7 +42,6 @@ sub main {
 
 	$stage->signal_connect('button-release-event', sub {
 		my ($actor, $event) = @_;
-		print "event ", $event->button, "\n";
 		if ($event->button == 1) {
 			print "Start\n";
 			$progress->pulse_animation_start();
