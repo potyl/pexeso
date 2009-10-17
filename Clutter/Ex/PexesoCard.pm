@@ -136,7 +136,7 @@ sub fade {
 	my ($timeline) = @_;
 
 	my $shared = 1;
-	if ($timeline) {
+	if (! $timeline) {
 		$timeline = Clutter::Timeline->new(300);
 		$shared = 0;
 	}
