@@ -39,10 +39,35 @@ sub main {
 
 	my $card2 = new_card($stage, @files);
 
+my $text = Clutter::Text->new("Mono 28", "Hello world");
+$stage->add($text);
+$text->set_anchor_point_from_gravity('center');
+$text->set_position(
+	($stage->get_width - $text->get_width/2),
+	($stage->get_height - $text->get_height/2),
+);
+#text->set_rotation('y-axis', -30, 0, 0, 0);
+
+	my $direction = 0;
+	
 	$stage->signal_connect('button-release-event', sub {
 		foreach my $card ($card1, $card2) {
-			$card->flip();
+#			$card->flip();
 		}
+#		$card1->flip();
+	#	$card2->fade();
+		
+		my ($angle) = $text->get_rotation('y-axis');
+		$direction = ! $direction;
+		if ($direction == 0) { $angle = 180; }
+		else { $angle = 270; }
+		
+		
+		$text->animate('ease-out-elastic', 500, 
+			"scale-x", $direction ? 2 : 0.5,
+			"scale-y", $direction ? 2 : 0.5,
+			'rotation-angle-y', 180,
+		);
 	});
 
 	$stage->show_all();
