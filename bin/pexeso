@@ -67,7 +67,7 @@ use lib "$FindBin::Bin";
 use Glib qw(TRUE FALSE);
 use Gtk2;
 use Game::Pexeso::Card;
-use Clutter::Ex::Progress;
+use Game::Pexeso::Spinner;
 use Clutter qw(-init);
 use Data::Dumper;
 use AnyEvent::HTTP;

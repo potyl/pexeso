@@ -1,34 +1,34 @@
-#!/usr/bin/perl
+package Game::Pexeso::Spinner;
 
 =head1 NAME
 
-Clutter::Ex::Progress - A progress pacifier.
+Game::Pexeso::Spinner - A spinner used to show progress.
 
 =head1 SYNOPSIS
 
-	my $progress = Clutter::Ex::Progress->new();
-	$progress->set_position(100, 100);
-	$stage->add($progress);
+	my $spinner = Game::Pexeso::Spinner->new();
+	$spinner->set_position(100, 100);
+	$stage->add($spinner);
 
 	$stage->signal_connect('button-release-event', sub {
 		my ($actor, $event) = @_;
 		if ($event->button == 1) {
 			print "Start\n";
-			$progress->pulse_animation_start();
+			$spinner->pulse_animation_start();
 		}
 		elsif ($event->button == 2) {
 			print "Stop\n";
-			$progress->pulse_animation_stop();
+			$spinner->pulse_animation_stop();
 		}
 		else {
 			print "Once\n";
-			$progress->pulse_animation_step();
+			$spinner->pulse_animation_step();
 		}
 	});
 
 =head1 DESCRIPTION
 
-A progress pacifier that can be animated.
+A spinner showing progress that can be animated.
 
 =head1 METHODS
 
@@ -36,7 +36,7 @@ The following methods are available:
 
 =cut
 
-package Clutter::Ex::Progress;
+package Game::Pexeso::Spinner;
 
 use strict;
 use warnings;
@@ -53,11 +53,11 @@ my $TIME = 2_000;
 
 =head2 new
 
-Creates a new progress pacifier.
+Creates a new spinner.
 
 Usage:
 
-	my $card = Clutter::Ex::Progress->new();
+	my $spinner = Game::Pexeso::Spinner->new();
 
 =cut
 
@@ -76,7 +76,7 @@ sub new {
 
 
 #
-# Creates the actors that go into the progress group.
+# Creates the actors that go into the spinner group.
 #
 sub create_actors {
 	my $self = shift;
@@ -106,7 +106,7 @@ sub create_actors {
 
 =head2 pulse_animation_step
 
-Animates the progress group of one step.
+Animates the spinner group of one step.
 
 =cut
 
@@ -133,7 +133,7 @@ sub pulse_animation_step {
 
 =head2 pulse_animation_start
 
-Animates the progress group continuously until pulse_animation_stop() is
+Animates the spinner group continuously until pulse_animation_stop() is
 called.
 
 =cut
@@ -177,7 +177,7 @@ sub pulse_animation_stop {
 
 
 #
-# Creates a single actor that will be displayed in the progress group.
+# Creates a single actor that will be displayed in the spinner group.
 #
 sub create_actor {
 	my ($size, @rgba) = @_;
