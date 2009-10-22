@@ -6,7 +6,7 @@ pexeso - Play the pexeso game
 
 =head1 SYNOPSIS
 
-pexeso.pl [columns rows]
+pexeso [columns rows]
 
 Where I<columns> is the number of columns to use and I<rows> the number or rows.
 
