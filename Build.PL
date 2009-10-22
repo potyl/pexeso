@@ -35,7 +35,7 @@ my $build = inc::MyBuilder->new(
 	module_name       => 'Game::Pexeso',
 	license           => 'perl',
 	dist_author       => 'Emmanuel Rodriguez <potyl@cpan.org>',
-	dist_version_from => catfile('lib', 'Game', 'Xacobeo.pm'),
+	dist_version_from => catfile('lib', 'Game', 'Pexeso.pm'),
 
 	# Installation files
 	script_file => [ catfile('bin', 'pexeso') ],
