@@ -1,12 +1,12 @@
-#!/usr/bin/perl
+package Game::Pexeso::Card;
 
 =head1 NAME
 
-Clutter::Ex::PexesoCard - A card is an actor with two faces.
+Game::Pexeso::Card - A card is an actor with two faces.
 
 =head1 SYNOPSIS
 
-	my $card = Clutter::Ex::PexesoCard->new({
+	my $card = Game::Pexeso::Card->new({
 		front => $front_actor,
 		back  => $back_actor,
 	});
@@ -22,8 +22,6 @@ front face or the back face.
 The following methods are available:
 
 =cut
-
-package Clutter::Ex::PexesoCard;
 
 use strict;
 use warnings;
@@ -41,7 +39,7 @@ of the card is shown.
 
 Usage:
 
-	my $card = Clutter::Ex::PexesoCard->new({
+	my $card = Game::Pexeso::Card->new({
 		front => $front_actor,
 		back  => $back_actor,
 	});
