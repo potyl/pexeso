@@ -473,9 +473,9 @@ sub matching_pair_animation {
 	$pexeso->card_2(undef);
 	$pexeso->disable_selection(0);
 
+	# Check if the game is won (no more cards left)
 	if ($pexeso->number_pairs == 0) {
 		$timeline->signal_connect(completed => sub {
-			#$pexeso->quit("Game completed. You win!");
 			$pexeso->winning_screen();
 		});
 	}
