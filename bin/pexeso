@@ -62,7 +62,6 @@ use strict;
 use warnings;
 
 use FindBin;
-use lib "$FindBin::Bin";
 
 use Glib qw(TRUE FALSE);
 use Gtk2;
@@ -88,13 +87,15 @@ __PACKAGE__->mk_accessors qw(
 	number_pairs
 	disable_selection
 	timeline
-	progress
+	spinner
 );
 
 
 my $ICON_WIDTH = 80;
 my $ICON_HEIGHT = 80;
 my $MAX_WORKERS = 5;
+
+my $APP_FOLDER = File::Spec->catdir($FindBin::Bin, '..');
 
 exit main();
 
@@ -139,7 +140,10 @@ sub construct_game {
 	# Instead clones of this actor will be used. Since Clutter 1.0 an actor can
 	# only be cloned if it is added to the stage. Since this actor is not shown
 	# it is hidden in the stage.
-	my $backface = Clutter::Texture->new(File::Spec->catfile($FindBin::Bin, 'icon.png'));
+	my $icon_file = File::Spec->catfile(
+		$APP_FOLDER, 'share', 'pexeso', 'back-card.png'
+	);
+	my $backface = Clutter::Texture->new($icon_file);
 	$backface->hide();
 	$stage->add($backface);
 	$pexeso->backface($backface);
@@ -173,12 +177,12 @@ sub play_game {
 sub download_icon_list {
 	my $pexeso = shift;
 
-	my $progress = Clutter::Ex::Progress->new();
+	my $spinner = Game::Pexeso::Spinner->new();
 	my $stage = $pexeso->stage;
-	$progress->set_position($stage->get_width/2, $stage->get_height/2);
-	$stage->add($progress);
-	$progress->pulse_animation_start();
-	$pexeso->progress($progress);
+	$spinner->set_position($stage->get_width/2, $stage->get_height/2);
+	$stage->add($spinner);
+	$spinner->pulse_animation_start();
+	$pexeso->spinner($spinner);
 
 
 	my $uri = URI->new('http://hexten.net/cpan-faces/');
@@ -350,7 +354,7 @@ sub place_cards {
 		my $i = @cards;
 		foreach my $frontface ($actor, $clone) {
 
-			my $card = Clutter::Ex::PexesoCard->new({
+			my $card = Game::Pexeso::Card->new({
 				front => $frontface,
 				back  => Clutter::Clone->new($pexeso->backface),
 			});
@@ -377,7 +381,7 @@ sub place_cards {
 	}
 
 	# Stop the progress animation
-	$pexeso->progress->pulse_animation_stop();
+	$pexeso->spinner->pulse_animation_stop();
 }
 
 
