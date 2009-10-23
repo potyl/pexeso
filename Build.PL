@@ -51,9 +51,9 @@ my $build = inc::MyBuilder->new(
 
 	meta_merge => {
 		resources => {
-#			homepage   => 'http://www.github.com/potyl/pexeso/',
-#			bugtracker => 'http://www.github.com/potyl/pexeso/issues',
-#			repository => 'http://www.github.com/potyl/pexeso/',
+			homepage   => 'http://github.com/potyl/pexeso',
+			bugtracker => 'http://github.com/potyl/pexeso/issues',
+			repository => 'http://github.com/potyl/pexeso',
 		},
 	},
 );
