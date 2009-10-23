@@ -2,3 +2,4 @@ Build
 _build
 blib
 Game-Pexeso-*.tar.gz
+META.yml
