@@ -12,3 +12,4 @@ MANIFEST.SKIP
 META.yml
 README
 share/pexeso/back-card.png
+t/pexeso.t
